@@ -93,7 +93,9 @@ bash training_scripts/single_node/run_chatglm-6b.sh
 
 [THUDM/ChatGLM-6B](https://github.com/THUDM/ChatGLM-6B/tree/main)
 
-DeepSpeed-Chat源码详解：https://blog.csdn.net/remixa/category_12325075.html
+[DeepSpeed-Chat-ChatGLM](https://github.com/yangzhipeng1108/DeepSpeed-Chat-ChatGLM)
+
+[DeepSpeed-Chat源码详解](https://blog.csdn.net/remixa/category_12325075.html)
 
 ## 备注
 

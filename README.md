@@ -84,7 +84,7 @@ bash training_scripts/single_node/run_chatglm-6b.sh
 cd training/step3_rlhf_finetuning/
 
 # Run the training script
-bash training_scripts/single_node/run_chatglm-6b.sh
+bash training_scripts/single_node/run_chatglm-6b.sh actor_model_path critic_model_path
 ```
 
 ## 参考

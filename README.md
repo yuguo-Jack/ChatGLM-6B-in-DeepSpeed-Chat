@@ -12,7 +12,7 @@ ChatGLM-6B 是清华大学开源的开源的、支持中英双语的对话语言
 
 ## 数据集
 
-https://huggingface.co/datasets/Dahoas/rm-static
+[Dahoas/rm-static](https://huggingface.co/datasets/Dahoas/rm-static)
 
 ## 环境配置
 
@@ -29,14 +29,14 @@ source replace_origin.sh
 
 然后需要卸载torch1.10，安装dtk22.10.1对应的 Deepspeed0.8.2与torch1.13，可从开发者社区[AI生态包](https://developer.hpccube.com/tool/)下载安装。
 
-模型目录https://huggingface.co/THUDM/chatglm-6b需要修改config.json中auto_map：
+[模型目录](https://huggingface.co/THUDM/chatglm-6b)，需要修改config.json中auto_map：
 
-"AutoModel": "modeling_chatglm.ChatGLMModel",
-"AutoModelForCausalLM": "modeling_chatglm.ChatGLMForConditionalGeneration",
+"AutoModel": "modeling_chatglm.ChatGLMModel"
+"AutoModelForCausalLM": "modeling_chatglm.ChatGLMForConditionalGeneration"
 
 ## step1
 
-阶段1可以采取任意一个支持ChatGLM-6B全参微调的框架，但是使用的数据集尽量和step2和step3保证分布一致（[deepspeed-chat](https://github.com/microsoft/DeepSpeedExamples/tree/master/applications/DeepSpeed-Chat)）
+阶段1可以采取任意一个支持ChatGLM-6B全参微调的框架，但是使用的数据集尽量和step2和step3保证分布一致（[DeepSpeed-Chat](https://github.com/microsoft/DeepSpeedExamples/tree/master/applications/DeepSpeed-Chat)）
 
 ### 训练
 
@@ -61,7 +61,7 @@ bash training_scripts/single_node/run_chatglm-6b.sh
 微调训练命令：
 
 ```plaintext
-# Move into the first step of the pipeline
+# Move into the second step of the pipeline
 cd training/step2_reward_model_finetuning/
 
 # Run the training script
@@ -79,7 +79,7 @@ bash training_scripts/single_node/run_chatglm-6b.sh
 微调训练命令：
 
 ```plaintext
-# Move into the first step of the pipeline
+# Move into the third step of the pipeline
 cd training/step3_rlhf_finetuning/
 
 # Run the training script

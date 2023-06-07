@@ -31,12 +31,12 @@ source replace_origin.sh
 
 [模型目录](https://huggingface.co/THUDM/chatglm-6b)，需要修改config.json中auto_map：
 
-"AutoModel": "modeling_chatglm.ChatGLMModel"
-"AutoModelForCausalLM": "modeling_chatglm.ChatGLMForConditionalGeneration"
+"AutoModel": "modeling_chatglm.ChatGLMModel",
+"AutoModelForCausalLM": "modeling_chatglm.ChatGLMForConditionalGeneration",
 
 ## step1
 
-阶段1可以采取任意一个支持ChatGLM-6B全参微调的框架，但是使用的数据集尽量和step2和step3保证分布一致（[DeepSpeed-Chat](https://github.com/microsoft/DeepSpeedExamples/tree/master/applications/DeepSpeed-Chat)）
+阶段1可以采取任意一个支持ChatGLM-6B全参微调的项目进行，但是使用的数据集尽量和step2和step3保证分布一致（[DeepSpeed-Chat](https://github.com/microsoft/DeepSpeedExamples/tree/master/applications/DeepSpeed-Chat)）
 
 ### 训练
 

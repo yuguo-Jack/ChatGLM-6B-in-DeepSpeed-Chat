@@ -31,8 +31,9 @@ source replace_origin.sh
 
 [模型目录](https://huggingface.co/THUDM/chatglm-6b)，需要修改config.json中auto_map：
 
-"AutoModel": "modeling_chatglm.ChatGLMModel",
-"AutoModelForCausalLM": "modeling_chatglm.ChatGLMForConditionalGeneration",
+"AutoModel": "modeling_chatglm.ChatGLMModel"
+
+"AutoModelForCausalLM": "modeling_chatglm.ChatGLMForConditionalGeneration"
 
 ## step1
 

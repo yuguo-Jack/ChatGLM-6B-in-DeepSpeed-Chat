@@ -12,7 +12,7 @@ ChatGLM-6B 是清华大学开源的开源的、支持中英双语的对话语言
 
 ## 数据集
 
-[Dahoas/rm-static](https://huggingface.co/datasets/Dahoas/rm-static)
+[Dahoas/rm-static](https://huggingface.co/datasets/Dahoas/rm-static) 或自定义数据集
 
 ## 环境配置
 
@@ -37,11 +37,11 @@ source replace_origin.sh
 
 ## step1
 
-阶段1可以采取任意一个支持ChatGLM-6B全参微调的项目进行，但是使用的数据集尽量和step2和step3保证分布一致（[DeepSpeed-Chat](https://github.com/microsoft/DeepSpeedExamples/tree/master/applications/DeepSpeed-Chat)）
+阶段1可以采取任意一个支持ChatGLM-6B全参微调的项目进行，但是使用的数据集尽量和step2和step3保证分布一致（[DeepSpeed-Chat](https://github.com/microsoft/DeepSpeedExamples/tree/master/applications/DeepSpeed-Chat)）。
 
 ### 训练
 
-该微调脚本运行环境为1节点，8张DCU-Z100L-32G
+该微调脚本运行环境为1节点，8张DCU-Z100L-32G。如果在超算集群上测试，可以参考 training/mpirun_slurm 中相关脚本，以下只演示如何在本地节点启动。
 
 微调训练命令：
 
@@ -53,11 +53,13 @@ cd training/step1_supervised_finetuning/
 bash training_scripts/single_node/run_chatglm-6b.sh
 ```
 
+采用自定义数据集训练**10 epoch loss 可以从4左右降至0.02左右，ppl从72降至1.01**，推理输出正常，学的比较过拟合。
+
 ## step2
 
 ### 训练
 
-该微调脚本运行环境为1节点，8张DCU-Z100L-32G
+该微调脚本运行环境为1节点，8张DCU-Z100L-32G。如果在超算集群上测试，可以参考 training/mpirun_slurm 中相关脚本，以下只演示如何在本地节点启动。
 
 微调训练命令：
 
@@ -75,7 +77,7 @@ bash training_scripts/single_node/run_chatglm-6b.sh
 
 ### 训练
 
-该微调脚本运行环境为1节点，8张DCU-Z100L-32G
+该微调脚本运行环境为1节点，8张DCU-Z100L-32G。如果在超算集群上测试，可以参考 training/mpirun_slurm 中相关脚本，以下只演示如何在本地节点启动。
 
 微调训练命令：
 
@@ -85,6 +87,12 @@ cd training/step3_rlhf_finetuning/
 
 # Run the training script
 bash training_scripts/single_node/run_chatglm-6b.sh actor_model_path critic_model_path 
+```
+
+### 推理
+
+```
+bash inference.sh
 ```
 
 ## 参考

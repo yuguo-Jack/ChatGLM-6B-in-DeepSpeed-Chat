@@ -18,7 +18,7 @@ ChatGLM-6B 是清华大学开源的开源的、支持中英双语的对话语言
 
 单节点需要8张Z100L。
 
-推荐使用docker方式运行，提供[光源](https://www.sourcefind.cn/#/service-details)torch的docker镜像：image.sourcefind.cn:5000/dcu/admin/base/pytorch:1.10.0-centos7.6-dtk-22.10.1-py37-latest
+推荐使用docker方式运行，提供[光源](https://www.sourcefind.cn/#/service-details)torch的docker镜像：image.sourcefind.cn:5000/dcu/admin/base/pytorch:1.10.0-centos7.6-dtk-22.10.1-py37-latest。（如果使用超算集群环境，建议使用Python虚拟环境）
 
 进入docker:
 
@@ -27,7 +27,7 @@ cd /opt/dtk/.hip
 source replace_origin.sh
 ```
 
-然后需要卸载torch1.10，安装dtk22.10.1对应的 Deepspeed0.8.2与torch1.13，可从开发者社区[AI生态包](https://developer.hpccube.com/tool/)下载安装。
+然后需要卸载torch1.10，安装dtk22.10.1对应的 Deepspeed0.9.2与torch1.13.1，可从开发者社区[AI生态包](https://developer.hpccube.com/tool/)下载安装。（dtk-23.04已经发布，可以dtk也替换成23.04版本）
 
 [模型目录](https://huggingface.co/THUDM/chatglm-6b)，需要修改config.json中auto_map：
 
@@ -41,7 +41,11 @@ source replace_origin.sh
 
 ### 训练
 
-该微调脚本运行环境为1节点，8张DCU-Z100L-32G。如果在超算集群上测试，可以参考 training/mpirun_slurm 中相关脚本，以下只演示如何在本地节点启动。
+该微调脚本运行环境为1节点，8张DCU-Z100L-32G。
+
+如果在超算集群上测试，可以参考 training/mpirun_slurm 中相关脚本，需要建个Python虚拟环境venv_torch3.7，将step1下的脚本放置到 training/step1_supervised_finetuning 下，执行 run.sh 即可。
+
+以下只演示如何在本地节点启动。
 
 微调训练命令：
 
@@ -59,7 +63,11 @@ bash training_scripts/single_node/run_chatglm-6b.sh
 
 ### 训练
 
-该微调脚本运行环境为1节点，8张DCU-Z100L-32G。如果在超算集群上测试，可以参考 training/mpirun_slurm 中相关脚本，以下只演示如何在本地节点启动。
+该微调脚本运行环境为1节点，8张DCU-Z100L-32G。
+
+如果在超算集群上测试，可以参考 training/mpirun_slurm 中相关脚本，需要建个Python虚拟环境venv_torch3.7，将step2下的脚本放置到 training/step2_reward_model_finetuning 下，执行 run.sh 即可。
+
+以下只演示如何在本地节点启动。
 
 微调训练命令：
 
@@ -71,13 +79,19 @@ cd training/step2_reward_model_finetuning/
 bash training_scripts/single_node/run_chatglm-6b.sh
 ```
 
+稍后更新在自定义数据集上的训练效果。
+
 ## step3
 
 当前环境可以承载的负载有限，阶段3需要加载step1、2的输出模型，所以打开尽可能多的显存内存优化策略，参考step3的main.py，如果在超算上运行可以适当放宽限制提高性能。
 
 ### 训练
 
-该微调脚本运行环境为1节点，8张DCU-Z100L-32G。如果在超算集群上测试，可以参考 training/mpirun_slurm 中相关脚本，以下只演示如何在本地节点启动。
+该微调脚本运行环境为1节点，8张DCU-Z100L-32G。
+
+如果在超算集群上测试，可以参考 training/mpirun_slurm 中相关脚本，需要建个Python虚拟环境venv_torch3.7，将step3下的脚本放置到 training/step3_rlhf_finetuning 下，执行 run.sh 即可。
+
+以下只演示如何在本地节点启动。
 
 微调训练命令：
 
@@ -88,6 +102,8 @@ cd training/step3_rlhf_finetuning/
 # Run the training script
 bash training_scripts/single_node/run_chatglm-6b.sh actor_model_path critic_model_path 
 ```
+
+稍后更新在自定义数据集上的训练效果。
 
 ### 推理
 

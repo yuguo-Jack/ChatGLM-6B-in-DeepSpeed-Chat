@@ -41,6 +41,7 @@ def create_hf_model(model_class,
 
     model.config.end_token_id = tokenizer.eos_token_id
     model.config.pad_token_id = model.config.eos_token_id
+    # 利用Tensor Core优化GPU性能的tricks http://www.gpus.cn/gpus_list_page_techno_support_content?id=61
     model.resize_token_embeddings(int(
         8 *
         math.ceil(len(tokenizer) / 8.0)))  # make the vocab size multiple of 8

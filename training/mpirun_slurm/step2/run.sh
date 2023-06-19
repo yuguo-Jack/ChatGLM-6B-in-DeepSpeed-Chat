@@ -3,6 +3,6 @@
 mkdir -p log 
 #rm -rf log/*
 mkdir -p step2_output
-mkdir hostfile
+mkdir -p hostfile
 
-bash run-step2.sh
+sbatch run-step2.sh

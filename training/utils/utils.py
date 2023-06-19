@@ -56,7 +56,7 @@ def load_hf_tokenizer(model_name_or_path, fast_tokenizer=True):
                                                   fast_tokenizer=True)
     return tokenizer
 
-def load_hf_chatglm_tokenizer(model_name_or_path, trust_remote_code=True):
+def load_hf_chatglm_tokenizer(model_name_or_path, trust_remote_code=True, use_fast=True):
     if os.path.exists(model_name_or_path):
         # Locally tokenizer loading has some issue, so we need to force download
         model_json = os.path.join(model_name_or_path, "config.json")
@@ -66,10 +66,10 @@ def load_hf_chatglm_tokenizer(model_name_or_path, trust_remote_code=True):
             model_name = model_json_file["_name_or_path"]
             print(model_name)
             tokenizer = AutoTokenizer.from_pretrained(model_name,
-                                                      trust_remote_code=trust_remote_code)
+                                                      trust_remote_code=trust_remote_code, use_fast=use_fast)
     else:
         tokenizer = AutoTokenizer.from_pretrained(model_name_or_path,
-                                                       trust_remote_code=trust_remote_code)
+                                                       trust_remote_code=trust_remote_code, use_fast=use_fast)
     return tokenizer
 
 def save_hf_format(model, tokenizer, args, sub_folder=""):

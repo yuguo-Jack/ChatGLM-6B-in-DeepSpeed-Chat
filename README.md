@@ -57,7 +57,9 @@ cd training/step1_supervised_finetuning/
 bash training_scripts/single_node/run_chatglm-6b.sh
 ```
 
-采用自定义数据集训练**10 epoch loss 可以从4左右降至0.02左右，ppl从72降至1.01**，推理输出正常，学的比较过拟合。
+### 收敛性
+
+在超算集群上采用**自定义数据集**训练**10 epoch loss 可以从4左右降至0.02左右，ppl从72降至1.01**，推理输出正常，学的比较过拟合。
 
 ## step2
 
@@ -79,7 +81,25 @@ cd training/step2_reward_model_finetuning/
 bash training_scripts/single_node/run_chatglm-6b.sh
 ```
 
-稍后更新在自定义数据集上的训练效果。
+### 收敛性
+
+在超算集群上采用**自定义数据集**只训练**1 epoch，loss 从1.7左右降至0.25左右**
+
+chosen scores, rejected scores, acc如下所示：
+
+before train：
+
+```
+chosen_last_scores (higher is better) : 1.8644356727600098, reject_last_scores (lower is better) : 1.9873332977294922, acc (higher is better) : 0.33432674408
+```
+
+after train：
+
+```
+chosen_last_scores (higher is better) : 12.223048210144043, reject_last_scores (lower is better) : 4.411005973815918, acc (higher is better) : 0.98
+```
+
+可以看出 scores diff 增大，acc 增大。由于训练数据不多，评估时 acc 较高。
 
 ## step3
 

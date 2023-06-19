@@ -379,12 +379,9 @@ def main():
     torch.distributed.barrier()
 
     # create common tokenizer based on actor model
-    if "chatglm" in args.actor_model_name_or_path:
-        tokenizer = load_hf_chatglm_tokenizer(args.actor_model_name_or_path,
-                                      trust_remote_code=True)
-    else:
-        tokenizer = load_hf_tokenizer(args.actor_model_name_or_path,
-                                      fast_tokenizer=True)
+
+    tokenizer = load_hf_chatglm_tokenizer(args.actor_model_name_or_path, trust_remote_code=True)
+
     tokenizer.pad_token = tokenizer.eos_token
 
     prompt_train_dataloader, unsupervised_train_dataloader, num_total_iters = create_datasets(
@@ -507,19 +504,19 @@ def main():
                                   global_rank=args.global_rank,
                                   save_dir=os.path.join(
                                       args.output_dir, 'actor'),
-                                  zero_stage=args.actor_zero_stage)
+                                  zero_stage=args.actor_zero_stage, train_phase="ppo")
             if args.enable_ema:
                 save_zero_three_model(rlhf_engine.actor_ema,
                                       global_rank=args.global_rank,
                                       save_dir=os.path.join(
                                           args.output_dir, 'actor_ema'),
-                                      zero_stage=args.actor_zero_stage)
+                                      zero_stage=args.actor_zero_stage, train_phase="ppo")
         if args.critic_zero_stage == 3:
             save_zero_three_model(rlhf_engine.critic,
                                   global_rank=args.global_rank,
                                   save_dir=os.path.join(
                                       args.output_dir, 'critic'),
-                                  zero_stage=args.critic_zero_stage)
+                                  zero_stage=args.critic_zero_stage, train_phase="rm")
 
 
 if __name__ == "__main__":

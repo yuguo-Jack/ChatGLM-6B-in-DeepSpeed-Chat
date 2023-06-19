@@ -131,7 +131,7 @@ class PromptDataset(Dataset):
             return {
                 "input_ids": self.chosen_dataset[idx]["input_ids"],
                 "attention_mask": self.chosen_dataset[idx]["attention_mask"],
-                "labels": self.chosen_dataset[idx]["input_ids"]
+                "labels": self.chosen_dataset[idx]["labels"]
             }
         elif self.train_phase == 2:
             return self.chosen_dataset[idx]["input_ids"], self.chosen_dataset[idx]["attention_mask"], \
@@ -149,20 +149,41 @@ def create_dataset_split(current_dataset, raw_dataset, train_phase, tokenizer,
     if train_phase == 1:
         for i, tmp_data in enumerate(current_dataset):
             # tokenize the text
-            chosen_sentence = raw_dataset.get_prompt_and_chosen(
-                tmp_data)  # the accept response
-            if chosen_sentence is not None:
-                chosen_sentence += end_of_conversation_token
-                chosen_token = tokenizer(chosen_sentence,
-                                         max_length=max_seq_len,
-                                         padding="max_length",
+            prompt_sentence = raw_dataset.get_prompt(tmp_data)  # the accept response
+            real_chosen_sentence = raw_dataset.get_chosen(tmp_data)
+            if prompt_sentence is not None:
+                prompt_token = tokenizer(prompt_sentence,
+                                         max_length=int(max_seq_len / 2),
+                                         # padding="max_length",
                                          truncation=True,
                                          return_tensors="pt")
-                chosen_token["input_ids"] = chosen_token["input_ids"].squeeze(
-                    0)
-                chosen_token["attention_mask"] = chosen_token[
-                    "attention_mask"].squeeze(0)
-                chosen_dataset.append(chosen_token)
+                prompt_token["input_ids"] = prompt_token["input_ids"].squeeze(0)
+                prompt_token["attention_mask"] = prompt_token["attention_mask"].squeeze(0)
+
+                real_chosen_sentence += end_of_conversation_token
+                real_chosen_token = tokenizer(real_chosen_sentence,
+                                              max_length=int(max_seq_len / 2),
+                                              # padding="max_length",
+                                              truncation=True,
+                                              return_tensors="pt")
+                real_chosen_token["input_ids"] = real_chosen_token["input_ids"].squeeze(0)
+                real_chosen_token["attention_mask"] = real_chosen_token["attention_mask"].squeeze(0)
+
+                chosen_token_input_ids = torch.cat([prompt_token["input_ids"],
+                                                    real_chosen_token["input_ids"],
+                                                    torch.Tensor([tokenizer.eos_token_id]).long()
+                                                    ]
+                                                   )[max_seq_len * -1:]
+                
+                chosen_token_len = len(chosen_token_input_ids)
+                prompt_token['input_ids'] = chosen_token_input_ids
+                prompt_token['attention_mask'] = None
+
+                response_len = len(real_chosen_token["input_ids"])
+
+                prompt_token["labels"] = prompt_token["input_ids"].clone()
+                prompt_token["labels"][: chosen_token_len - response_len - 1] = -100
+                chosen_dataset.append(prompt_token)
 
     elif train_phase == 2:
         for i, tmp_data in enumerate(current_dataset):

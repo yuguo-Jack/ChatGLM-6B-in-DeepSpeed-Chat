@@ -201,12 +201,8 @@ def main():
     set_random_seed(args.seed)
     torch.distributed.barrier()
 
-    if "chatglm" in args.model_name_or_path:
-        tokenizer = load_hf_chatglm_tokenizer(args.model_name_or_path,
-                                              trust_remote_code=True)
-    else:
-        tokenizer = load_hf_tokenizer(args.model_name_or_path,
-                                      fast_tokenizer=True)
+    tokenizer = load_hf_chatglm_tokenizer(args.model_name_or_path, trust_remote_code=True)
+
     tokenizer.pad_token = tokenizer.eos_token
 
     rm_model = create_critic_model(args.model_name_or_path,
@@ -328,6 +324,11 @@ def main():
             rm_model.backward(loss)
             rm_model.step()
             mean_loss += loss.item()
+            try:
+                print_loss = get_all_reduce_mean(mean_loss).item()
+                print_rank_0(f"loss: {print_loss}", args.global_rank)
+            except:
+                pass
             # if step == 20:
             #     break
             
@@ -355,7 +356,7 @@ def main():
             save_zero_three_model(rm_model,
                                   args.global_rank,
                                   args.output_dir,
-                                  zero_stage=args.zero_stage)
+                                  zero_stage=args.zero_stage, train_phase="rm")
 
 
 if __name__ == "__main__":

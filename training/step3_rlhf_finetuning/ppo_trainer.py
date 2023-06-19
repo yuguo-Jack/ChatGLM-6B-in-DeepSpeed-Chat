@@ -142,7 +142,7 @@ class DeepSpeedPPOTrainer():
             'ref_logprobs': gather_log_probs(logits_ref[:, :-1, :], seq[:,
                                                                         1:]),
             'value': values,
-            'rewards': reward_score,
+            'rewards': (reward_score - (-0.8677118420600891)) / 0.2210693359375,
             'input_ids': seq,
             "attention_mask": attention_mask,
             "action_mask":action_mask

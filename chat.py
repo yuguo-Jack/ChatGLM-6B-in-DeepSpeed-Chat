@@ -19,10 +19,8 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    if 'chatglm' in args.path:
-        cmd = f"python3 ./inference/chatbot.py --path {args.path} --max_new_tokens {args.max_new_tokens}"
-    else:
-        cmd = f"python3 ./inference/chatbot_chatglm.py --path {args.path} --max_new_tokens {args.max_new_tokens}"
+    cmd = f"python3 ./inference/chatbot_chatglm.py --path {args.path} --max_new_tokens {args.max_new_tokens}"
+
     p = subprocess.Popen(cmd, shell=True)
     p.wait()
 

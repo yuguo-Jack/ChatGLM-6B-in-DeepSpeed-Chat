@@ -21,10 +21,9 @@ def create_hf_model(model_class,
                     ds_config=None,
                     rlhf_training=False,
                     disable_dropout=False):
-    if  "chatglm" in model_name_or_path:
-        model_config = AutoConfig.from_pretrained(model_name_or_path, trust_remote_code=True)
-    else:
-        model_config = AutoConfig.from_pretrained(model_name_or_path)
+
+    model_config = AutoConfig.from_pretrained(model_name_or_path, trust_remote_code=True)
+
     if disable_dropout:
         model_config.dropout = 0.0
     # Note: dschf is defined in function scope to avoid global effects
@@ -35,20 +34,10 @@ def create_hf_model(model_class,
         dschf = None
     if rlhf_training:
         # the weight loading is handled by create critic model
-        if "chatglm" in model_name_or_path:
-            model = model_class.from_config(config=model_config, empty_init=False, trust_remote_code=True)
-        else:
-            model = model_class.from_config(model_config)
+        model = model_class.from_config(config=model_config, empty_init=False, trust_remote_code=True)
     else:
-        print(model_name_or_path)
-        if "chatglm" in model_name_or_path:
-            model = model_class.from_pretrained(model_name_or_path, config=model_config, empty_init=False, trust_remote_code=True)
-        else:
-            model = model_class.from_pretrained(
-                model_name_or_path,
-                from_tf=bool(".ckpt" in model_name_or_path),
-                config=model_config)
-
+        #print(model_name_or_path)
+        model = model_class.from_pretrained(model_name_or_path, config=model_config, empty_init=False, trust_remote_code=True)
 
     model.config.end_token_id = tokenizer.eos_token_id
     model.config.pad_token_id = model.config.eos_token_id

@@ -157,7 +157,7 @@ def moving_average(model, model_ema, beta=0.992, device=None, zero_stage=0):
                 param_ema.data.copy_(torch.lerp(data, param_ema.data, beta))
 
 
-def save_zero_three_model(model_ema, global_rank, save_dir, zero_stage=0):
+def save_zero_three_model(model_ema, global_rank, save_dir, zero_stage=0, train_phase="sft"):
     zero_stage_3 = (zero_stage == 3)
     os.makedirs(save_dir, exist_ok=True)
     WEIGHTS_NAME = "pytorch_model.bin"
@@ -193,5 +193,7 @@ def save_zero_three_model(model_ema, global_rank, save_dir, zero_stage=0):
             if global_rank == 0 and "lora" not in k:
                 output_state_dict[k] = v_p
         if global_rank == 0:
+            if train_phase == "sft" or train_phase == "ppo":
+                output_state_dict["lm_head.weight"] = output_state_dict["transformer.word_embeddings.weight"]
             torch.save(output_state_dict, output_model_file)
         del output_state_dict

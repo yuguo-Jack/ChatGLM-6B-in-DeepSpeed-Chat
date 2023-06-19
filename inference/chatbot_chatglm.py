@@ -10,7 +10,7 @@ import transformers  # noqa: F401
 import os
 import json
 from collections import defaultdict
-from transformers import AutoModel, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
 def parse_args():
@@ -33,7 +33,7 @@ def parse_args():
 args = parse_args()
 
 tokenizer = AutoTokenizer.from_pretrained(args.path, trust_remote_code=True)
-model = AutoModel.from_pretrained(args.path, trust_remote_code=True).half().cuda()
+model = AutoModelForCausalLM.from_pretrained(args.path, trust_remote_code=True).half().cuda()
 model = model.eval()
 
 """Override Chatbot.postprocess"""

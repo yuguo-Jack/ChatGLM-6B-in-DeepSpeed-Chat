@@ -10,7 +10,7 @@ export HIP_VISIBLE_DEVICES=0,1,2,3
 
 OUTPUT=./step3_output
 ACTOR_ZERO_STAGE=3
-CRITIC_ZERO_STAGE=3
+CRITIC_ZERO_STAGE=2
 Actor_Lr=1e-5
 Critic_Lr=1e-5
 
@@ -36,8 +36,8 @@ APP="python main.py \
     --per_device_mini_train_batch_size 1 \
     --generation_batch_numbers 1 \
     --ppo_epochs 1 \
-    --max_answer_seq_len 256 \
-    --max_prompt_seq_len 256 \
+    --max_answer_seq_len 512 \
+    --max_prompt_seq_len 512 \
     --actor_learning_rate ${Actor_Lr} \
     --critic_learning_rate ${Critic_Lr} \
     --num_train_epochs 1 \
@@ -50,8 +50,6 @@ APP="python main.py \
     --deepspeed --seed 1234 \
     --offload \
     --offload_reference_model \
-    --release_inference_cache \
-    --unpin_actor_parameters \
     --actor_zero_stage $ACTOR_ZERO_STAGE \
     --critic_zero_stage $CRITIC_ZERO_STAGE \
     --enable_ema \

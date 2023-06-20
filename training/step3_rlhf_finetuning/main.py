@@ -308,7 +308,7 @@ def parse_args():
 def create_datasets(args, tokenizer, train_phase=3):
     unsupervised_training_enabled = args.unsupervised_dataset_name and args.unsupervised_dataset_config_name
     prompt_train_dataset, _ = create_prompt_dataset(
-        args.local_rank, args.data_path, args.data_split,
+        args.global_rank, args.data_path, args.data_split,
         args.data_output_path, train_phase, args.seed, tokenizer,
         args.max_prompt_seq_len)
     if unsupervised_training_enabled:

@@ -41,7 +41,7 @@ def parse_args():
 def load_stuff(model_name_or_path, num_padding_at_beginning):
 
     tokenizer = AutoTokenizer.from_pretrained(model_name_or_path,
-                                              fast_tokenizer=True)
+                                                       trust_remote_code=trust_remote_code, use_fast=True)
     tokenizer.pad_token = tokenizer.eos_token
     model = create_critic_model(model_name_or_path, tokenizer, None,
                                 num_padding_at_beginning, True)

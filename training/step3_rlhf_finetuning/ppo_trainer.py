@@ -8,6 +8,7 @@ import sys
 import os
 import deepspeed
 from deepspeed.runtime.zero.partition_parameters import ZeroParamStatus
+from utils.utils import print_rank_0, to_device
 
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
@@ -108,7 +109,7 @@ class DeepSpeedPPOTrainer():
         prompt_length = prompts.shape[1]
         ans = seq[:, prompt_length:]
 
-        tokenizer = load_hf_chatglm_tokenizer(self.args.model_name_or_path, trust_remote_code=True)
+        tokenizer = load_hf_chatglm_tokenizer(self.args.actor_model_name_or_path, trust_remote_code=True)
 
         tokenizer.pad_token = tokenizer.eos_token
         seq_result = [tokenizer.decode(i) for i in ans]
@@ -119,7 +120,7 @@ class DeepSpeedPPOTrainer():
                                  truncation=True,
                                  return_tensors="pt")
         ans_mask= chosen_token[
-            "attention_mask"].squeeze(0)
+            "attention_mask"].squeeze(0).to(torch.device("cuda"))
 
         attention_mask = torch.cat((mask,ans_mask),dim = 1)
 
@@ -157,9 +158,10 @@ class DeepSpeedPPOTrainer():
         for i in range(prompts.sahpe[0]):
             prompts_inter = prompts[i]
             mask_inter = action_mask[i]
-            c_inds = (mask_inter == 1).nonzero()[0]
-            prompts[i] = torch.cat((prompts_inter[c_inds[0] + 1:], prompts_inter[:c_inds[0] + 1]))
-            action_mask[i] = torch.cat((mask_inter[c_inds[0] + 1:], mask_inter[:c_inds[0] + 1]))
+            if len((mask_inter == 1).nonzero()) != 0:
+                c_inds = (mask_inter == 1).nonzero()[0]
+                prompts[i] = torch.cat((prompts_inter[c_inds[0] + 1:], prompts_inter[:c_inds[0] + 1]))
+                action_mask[i] = torch.cat((mask_inter[c_inds[0] + 1:], mask_inter[:c_inds[0] + 1]))
 
         start = prompts.shape[1] - 1
         ends = start + action_mask[:, start:].sum(1)

@@ -222,7 +222,7 @@ def main():
     # Prepare the data
     train_phase = 1
     train_dataset, eval_dataset = create_prompt_dataset(
-        args.local_rank,
+        args.global_rank,
         args.data_path,
         args.data_split,
         args.data_output_path,
@@ -258,7 +258,7 @@ def main():
 
             loss = outputs.loss
             losses += loss.float()
-            if step == 5:
+            if step == 99:
                 break
         losses = losses / (step + 1)
         try:

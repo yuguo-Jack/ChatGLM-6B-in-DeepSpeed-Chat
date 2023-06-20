@@ -28,7 +28,7 @@ APP="python main.py \
     --num_padding_at_beginning 0 \
     --per_device_train_batch_size 1 \
     --per_device_eval_batch_size 1 \
-    --max_seq_len 512 \
+    --max_seq_len 1024 \
     --learning_rate 1e-5 \
     --weight_decay 0.1 \
     --num_train_epochs 1 \

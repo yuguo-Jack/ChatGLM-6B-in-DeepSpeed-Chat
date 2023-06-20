@@ -34,7 +34,7 @@ def create_hf_model(model_class,
         dschf = None
     if rlhf_training:
         # the weight loading is handled by create critic model
-        model = model_class.from_config(config=model_config, empty_init=False, trust_remote_code=True)
+        model = model_class.from_config(config=model_config, trust_remote_code=True)
     else:
         #print(model_name_or_path)
         model = model_class.from_pretrained(model_name_or_path, config=model_config, empty_init=False, trust_remote_code=True)
@@ -73,6 +73,6 @@ def create_critic_model(model_name_or_path,
             model_ckpt_path
         ), f"Cannot find model checkpoint at {model_ckpt_path}"
         critic_model.load_state_dict(
-            torch.load(model_ckpt_path, map_location='cpu'))
+            torch.load(model_ckpt_path, map_location='cuda'))
 
     return critic_model

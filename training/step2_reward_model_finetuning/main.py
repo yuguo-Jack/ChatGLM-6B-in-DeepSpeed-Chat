@@ -220,7 +220,7 @@ def main():
 
     train_phase = 2
     train_dataset, eval_dataset = create_prompt_dataset(
-        args.local_rank, args.data_path, args.data_split,
+        args.global_rank, args.data_path, args.data_split,
         args.data_output_path, train_phase, args.seed, tokenizer,
         args.max_seq_len)
 
@@ -247,6 +247,7 @@ def main():
         correct_predictions = 0
         total_predictions = 0
         scores = 0
+        r_scores = 0
         for step, batch in enumerate(eval_dataloader):
             batch = to_device(batch, device)
             #print(batch)
@@ -259,16 +260,19 @@ def main():
             correct_predictions += (chosen > rejected).sum()
             total_predictions += chosen.shape[0]
             scores += outputs["chosen_mean_scores"].mean().float()
-            if step == 5:  # For faster evaluation and debugging
+            r_scores += outputs["rejected_mean_scores"].mean().float()
+            if step == 99:  # For faster evaluation and debugging
                 break
         acc = correct_predictions / total_predictions
         scores = scores / (step + 1)
+        r_scores = r_scores / (step + 1)
         try:
             acc = get_all_reduce_mean(acc).item()
             scores = get_all_reduce_mean(scores).item()
+            r_scores = get_all_reduce_mean(r_scores).item()
         except:
             pass
-        return scores, acc
+        return scores, r_scores, acc
 
     # Split weights in two groups, one with weight decay and the other not.
     optimizer_grouped_parameters = get_optimizer_grouped_parameters(
@@ -306,9 +310,9 @@ def main():
     print_rank_0(
         f"***** Evaluating reward, Epoch {0}/{args.num_train_epochs} *****",
         args.global_rank)
-    reward_score, acc = evaluation_reward(rm_model, eval_dataloader)
+    reward_score, reject_score, acc = evaluation_reward(rm_model, eval_dataloader)
     print_rank_0(
-        f"chosen_last_scores (higher is better) : {reward_score}, acc (higher is better) : {acc}",
+        f"chosen_last_scores (higher is better) : {reward_score}, reject_last_scores (lower is better) : {reject_score}, acc (higher is better) : {acc}",
         args.global_rank)
 
     for epoch in range(args.num_train_epochs):
@@ -324,11 +328,10 @@ def main():
             rm_model.backward(loss)
             rm_model.step()
             mean_loss += loss.item()
-            try:
-                print_loss = get_all_reduce_mean(mean_loss).item()
-                print_rank_0(f"loss: {print_loss}", args.global_rank)
-            except:
-                pass
+            reward = outputs["chosen_mean_scores"].mean().float()
+            r_reward = outputs["rejected_mean_scores"].mean().float()
+            print_rank_0(f"step : {step}, loss : {mean_loss/(step+1)}, chosen reward : {reward}, rejected_reward: {r_reward}",
+                         args.global_rank)
             # if step == 20:
             #     break
             
@@ -339,9 +342,9 @@ def main():
         print_rank_0(
             f"***** Evaluating reward, Epoch {epoch+1}/{args.num_train_epochs} *****",
             args.global_rank)
-        reward_score, acc = evaluation_reward(rm_model, eval_dataloader)
+        reward_score, reject_score, acc = evaluation_reward(rm_model, eval_dataloader)
         print_rank_0(
-            f"chosen_last_scores (higher is better) : {reward_score}, acc (higher is better) : {acc}",
+            f"chosen_last_scores (higher is better) : {reward_score}, reject_last_scores (lower is better) : {reject_score}, acc (higher is better) : {acc}",
             args.global_rank)
         rm_model.tput_timer.update_epoch_count()
 

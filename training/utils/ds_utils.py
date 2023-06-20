@@ -59,8 +59,8 @@ def get_eval_ds_config(offload, stage=0):
         "stage3_param_persistence_threshold": 1e4,
         "offload_param": {
             "device": device
-        }
-        #"memory_efficient_linear": False
+        },
+        "memory_efficient_linear": False
     }
     return {
         "train_batch_size": GLOBAL_BATCH_SIZE,

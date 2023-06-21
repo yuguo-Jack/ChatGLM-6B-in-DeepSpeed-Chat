@@ -42,6 +42,23 @@ def gather_log_probs(logits, labels):
     log_probs_labels = log_probs.gather(dim=-1, index=labels.unsqueeze(-1))
     return log_probs_labels.squeeze(-1)
 
+def get_attention_masks(self, input_ids: torch.Tensor, device: torch.device) -> torch.Tensor:
+        r"""
+        Generates attention masks for left-padded sequences.
+
+        Note that ChatGLM assigns False on token to be attended in attention mask. In general settings, it should be True.
+
+        According to: https://huggingface.co/THUDM/chatglm-6b/blob/v1.1.0/modeling_chatglm.py#L680
+        """
+        batch_size, seq_length = input_ids.size()
+        attention_mask = torch.ones((batch_size, seq_length, seq_length), device=device)
+        attention_mask.tril_()
+        for i, seq in enumerate(input_ids):
+            attention_mask[i, :, :(seq == self.tokenizer.bos_token_id).nonzero()[0].item()] = 1 # context
+            attention_mask[i, :, :(seq != self.tokenizer.pad_token_id).nonzero()[0].item()] = 0 # padding
+        attention_mask.unsqueeze_(1)
+        attention_mask = (attention_mask < 0.5).bool()
+        return attention_mask
 
 class DeepSpeedPPOTrainer():
 
@@ -100,29 +117,8 @@ class DeepSpeedPPOTrainer():
 
         pad_token_id = self.tokenizer.pad_token_id
         action_mask = seq.not_equal(pad_token_id).long()
-        # attention_mask_1 = torch.ones(action_mask.shape[0], action_mask.shape[1],1).cuda()
-        # attention_mask_2= action_mask.unsqueeze(1)
-        # attention_mask = (attention_mask_1 * attention_mask_2) > 0
-        # attention_mask = attention_mask.unsqueeze(1)
-        # # print(attention_mask.shape)
-
-        prompt_length = prompts.shape[1]
-        ans = seq[:, prompt_length:]
-
-        tokenizer = load_hf_chatglm_tokenizer(self.args.actor_model_name_or_path, trust_remote_code=True)
-
-        tokenizer.pad_token = tokenizer.eos_token
-        seq_result = [tokenizer.decode(i) for i in ans]
-
-        chosen_token = tokenizer(seq_result,
-                                 max_length=self.args.max_answer_seq_len,
-                                 padding="max_length",
-                                 truncation=True,
-                                 return_tensors="pt")
-        ans_mask= chosen_token[
-            "attention_mask"].squeeze(0).to(torch.device("cuda"))
-
-        attention_mask = torch.cat((mask,ans_mask),dim = 1)
+        
+        attention_mask = get_attention_masks(seq, torch.device("cuda"))
 
         with torch.no_grad():
             output = self.actor_model(seq, attention_mask=attention_mask)

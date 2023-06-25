@@ -42,24 +42,6 @@ def gather_log_probs(logits, labels):
     log_probs_labels = log_probs.gather(dim=-1, index=labels.unsqueeze(-1))
     return log_probs_labels.squeeze(-1)
 
-def get_attention_masks(self, input_ids: torch.Tensor, device: torch.device) -> torch.Tensor:
-        r"""
-        Generates attention masks for left-padded sequences.
-
-        Note that ChatGLM assigns False on token to be attended in attention mask. In general settings, it should be True.
-
-        According to: https://huggingface.co/THUDM/chatglm-6b/blob/v1.1.0/modeling_chatglm.py#L680
-        """
-        batch_size, seq_length = input_ids.size()
-        attention_mask = torch.ones((batch_size, seq_length, seq_length), device=device)
-        attention_mask.tril_()
-        for i, seq in enumerate(input_ids):
-            attention_mask[i, :, :(seq == self.tokenizer.bos_token_id).nonzero()[0].item()] = 1 # context
-            attention_mask[i, :, :(seq != self.tokenizer.pad_token_id).nonzero()[0].item()] = 0 # padding
-        attention_mask.unsqueeze_(1)
-        attention_mask = (attention_mask < 0.5).bool()
-        return attention_mask
-
 class DeepSpeedPPOTrainer():
 
     def __init__(self, rlhf_engine, args):
@@ -81,6 +63,24 @@ class DeepSpeedPPOTrainer():
         self.cliprange_value = 0.2
         self.gamma = 1.0
         self.lam = 0.95
+
+    def get_attention_masks(self, input_ids: torch.Tensor, device: torch.device) -> torch.Tensor:
+        r"""
+        Generates attention masks for left-padded sequences.
+
+        Note that ChatGLM assigns False on token to be attended in attention mask. In general settings, it should be True.
+
+        According to: https://huggingface.co/THUDM/chatglm-6b/blob/v1.1.0/modeling_chatglm.py#L680
+        """
+        batch_size, seq_length = input_ids.size()
+        attention_mask = torch.ones((batch_size, seq_length, seq_length), device=device)
+        attention_mask.tril_()
+        for i, seq in enumerate(input_ids):
+            attention_mask[i, :, :(seq == self.tokenizer.bos_token_id).nonzero()[0].item()] = 1 # context
+            attention_mask[i, :, :(seq != self.tokenizer.pad_token_id).nonzero()[0].item()] = 0 # padding
+        attention_mask.unsqueeze_(1)
+        attention_mask = (attention_mask < 0.5).bool()
+        return attention_mask
 
     def _generate_sequence(self, prompts, mask):
 
@@ -118,7 +118,7 @@ class DeepSpeedPPOTrainer():
         pad_token_id = self.tokenizer.pad_token_id
         action_mask = seq.not_equal(pad_token_id).long()
         
-        attention_mask = get_attention_masks(seq, torch.device("cuda"))
+        attention_mask = self.get_attention_masks(seq, device=seq.device)
 
         with torch.no_grad():
             output = self.actor_model(seq, attention_mask=attention_mask)
@@ -151,7 +151,7 @@ class DeepSpeedPPOTrainer():
         kl_divergence_estimate = -self.kl_ctl * (log_probs - ref_log_probs)
         rewards = kl_divergence_estimate
 
-        for i in range(prompts.sahpe[0]):
+        for i in range(prompts.shape[0]):
             prompts_inter = prompts[i]
             mask_inter = action_mask[i]
             if len((mask_inter == 1).nonzero()) != 0:

@@ -268,7 +268,7 @@ def parse_args():
                         help="If > 0, use LoRA for efficient training.")
     parser.add_argument("--actor_lora_module_name",
                         type=str,
-                        default="decoder.layers.",
+                        default="transformer.layers.",
                         help="The scope of LoRA.")
     parser.add_argument("--critic_lora_dim",
                         type=int,

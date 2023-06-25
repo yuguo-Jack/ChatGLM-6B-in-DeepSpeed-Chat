@@ -50,8 +50,6 @@ deepspeed --num_gpus=8 --master_port $MASTER_PORT main.py \
    --deepspeed --seed 1234 \
    --offload \
    --offload_reference_model \
-   --release_inference_cache \
-   --unpin_actor_parameters \
    --actor_zero_stage $ACTOR_ZERO_STAGE \
    --critic_zero_stage $CRITIC_ZERO_STAGE \
    --enable_ema \

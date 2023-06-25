@@ -228,7 +228,7 @@ class DeepSpeedPPOTrainer():
 
     def critic_loss_fn(self, values, old_values, returns, mask):
         ## value loss
-        mask = mask[:,::-1]
+        mask = mask.flip(1)
         values_clipped = torch.clamp(
             values,
             old_values - self.cliprange_value,

@@ -143,7 +143,8 @@ class RewardModel(nn.Module):
                       inputs_embeds=None,
                       return_value_only=False,
                       prompt_length=0,
-                      use_cache=False):
+                      use_cache=False,
+                      train_phase=2):
 
         transformer_outputs = self.rwtranrsformer(
             input_ids,
@@ -168,9 +169,9 @@ class RewardModel(nn.Module):
                 value = values[i]
                 #print(input_id)
                 #print(value)
-                if len((input_id == self.PAD_ID).nonzero()) != 0:
-                    c_inds = (input_id == self.PAD_ID).nonzero()[-1]
 
+                if (train_phase == 2) and (len((input_id == self.PAD_ID).nonzero()) != 0):
+                    c_inds = (input_id == self.PAD_ID).nonzero()[-1]
                     input_id = torch.cat((input_id[ c_inds[0] + 1:] , input_id[ :c_inds[0] + 1]))
                     value = torch.cat((value[ c_inds[0] + 1:] , value[ :c_inds[0] + 1]))
 

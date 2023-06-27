@@ -8,7 +8,6 @@ import sys
 import os
 import deepspeed
 from deepspeed.runtime.zero.partition_parameters import ZeroParamStatus
-from utils.utils import print_rank_0, to_device
 
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
@@ -105,6 +104,10 @@ class DeepSpeedPPOTrainer():
                     i] <= 1:  # if the answer is shorter than 1 token, drop it
                 continue
             else:
+                if self.tokenizer.pad_token_id in ans[i]:  # remove pad
+                    ans[i] = list(filter((self.tokenizer.pad_token_id).__ne__, ans[i]))
+                seq[i][prompt_length:prompt_length+len(ans[i])] = ans[i]
+                seq[i][prompt_length+len(ans[i]):] = self.tokenizer.pad_token_id
                 out_seq.append(seq[i:i + 1])
         out_seq = torch.cat(out_seq, dim=0)  # concate output in the batch dim
 
@@ -125,7 +128,7 @@ class DeepSpeedPPOTrainer():
             output_ref = self.ref_model(seq, attention_mask=attention_mask)
             reward_score = self.reward_model.forward_value(
                 seq, attention_mask,
-                prompt_length=self.prompt_length)['chosen_end_scores'].detach(
+                prompt_length=self.prompt_length,train_phase=3)['chosen_end_scores'].detach(
                 )
             values = self.critic_model.forward_value(
                 seq, attention_mask, return_value_only=True).detach()[:, :-1]
@@ -150,14 +153,6 @@ class DeepSpeedPPOTrainer():
 
         kl_divergence_estimate = -self.kl_ctl * (log_probs - ref_log_probs)
         rewards = kl_divergence_estimate
-
-        for i in range(prompts.shape[0]):
-            prompts_inter = prompts[i]
-            mask_inter = action_mask[i]
-            if len((mask_inter == 1).nonzero()) != 0:
-                c_inds = (mask_inter == 1).nonzero()[0]
-                prompts[i] = torch.cat((prompts_inter[c_inds[0] + 1:], prompts_inter[:c_inds[0] + 1]))
-                action_mask[i] = torch.cat((mask_inter[c_inds[0] + 1:], mask_inter[:c_inds[0] + 1]))
 
         start = prompts.shape[1] - 1
         ends = start + action_mask[:, start:].sum(1)
@@ -228,7 +223,6 @@ class DeepSpeedPPOTrainer():
 
     def critic_loss_fn(self, values, old_values, returns, mask):
         ## value loss
-        mask = mask.flip(1)
         values_clipped = torch.clamp(
             values,
             old_values - self.cliprange_value,
@@ -245,7 +239,7 @@ class DeepSpeedPPOTrainer():
         lastgaelam = 0
         advantages_reversed = []
         length = rewards.size()[-1]
-        for t in range(start, length):
+        for t in reversed(range(start, length)):
             nextvalues = values[:, t + 1] if t < length - 1 else 0.0
             delta = rewards[:, t] + self.gamma * nextvalues - values[:, t]
             lastgaelam = delta + self.gamma * self.lam * lastgaelam

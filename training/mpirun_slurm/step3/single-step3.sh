@@ -10,9 +10,9 @@ export HIP_VISIBLE_DEVICES=0,1,2,3
 
 OUTPUT=./step3_output
 ACTOR_ZERO_STAGE=3
-CRITIC_ZERO_STAGE=2
-Actor_Lr=1e-5
-Critic_Lr=1e-5
+CRITIC_ZERO_STAGE=3
+Actor_Lr=1e-6
+Critic_Lr=1e-6
 
 # RM_STATIC=/public/home/hepj/data/DS-C/Dahoas/rm-static
 # FULL=/public/home/hepj/data/DS-C/Dahoas/full-hh-rlhf

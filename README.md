@@ -8,7 +8,7 @@ ChatGLM-6B 是清华大学开源的开源的、支持中英双语的对话语言
 
 ## DeepSpeed-Chat
 
-一个完整的端到端三阶段 OpenAI InstructGPT 训练策略，带有强化学习人类反馈（ RLHF ），从用户最喜欢的预训练大型语言模型检查点生成高质量的 ChatGPT 风格模型。
+一个完整的端到端三阶段 OpenAI InstructGPT 训练策略，带有强化学习人类反馈（ RLHF ）流程，可以生成高质量的 ChatGPT 风格模型。
 
 ## 数据集
 
@@ -125,7 +125,15 @@ cd training/step3_rlhf_finetuning/
 bash training_scripts/single_node/run_chatglm-6b.sh actor_model_path critic_model_path 
 ```
 
-稍后更新在自定义数据集上的训练效果。
+### 收敛性
+
+在超算上使用自定义数据集，采用**96张 DCU，训练1 epoch，起始 lr 都设置成1e-6**。PPO step 的 actor loss，critic loss，reward_score 如下图所示，完整 log 在 training/step3_rlhf_finetuning/training_log_output 里：
+
+![](https://github.com/yuguo-Jack/ChatGLM-6B-in-DeepSpeed-Chat/blob/main/training/step3_rlhf_finetuning/act_loss.jpg)
+
+![](https://github.com/yuguo-Jack/ChatGLM-6B-in-DeepSpeed-Chat/blob/main/training/step3_rlhf_finetuning/cri_loss.jpg)
+
+![](https://github.com/yuguo-Jack/ChatGLM-6B-in-DeepSpeed-Chat/blob/main/training/step3_rlhf_finetuning/reward_score.jpg)
 
 ### 推理
 

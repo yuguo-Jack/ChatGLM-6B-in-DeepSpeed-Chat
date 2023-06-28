@@ -138,7 +138,9 @@ bash training_scripts/single_node/run_chatglm-6b.sh actor_model_path critic_mode
 ### 推理
 
 ```
-bash inference.sh
+bash inference.sh 
+或者
+python3 cli_demo.py
 ```
 
 ## 参考

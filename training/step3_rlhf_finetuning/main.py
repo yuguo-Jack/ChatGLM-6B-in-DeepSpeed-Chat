@@ -276,7 +276,7 @@ def parse_args():
                         help="If > 0, use LoRA for efficient training.")
     parser.add_argument("--critic_lora_module_name",
                         type=str,
-                        default="transformer.layers.",
+                        default="layers.",
                         help="The scope of LoRA.")
     parser.add_argument('--only_optimize_lora',
                         action='store_true',

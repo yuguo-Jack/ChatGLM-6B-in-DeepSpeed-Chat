@@ -20,7 +20,7 @@ ChatGLM-6B 是清华大学开源的开源的、支持中英双语的对话语言
 
 单节点需要8张 Z100L。
 
-推荐使用 docker 方式运行，提供[光源](https://www.sourcefind.cn/#/service-details) torch 的 docker 镜像：image.sourcefind.cn:5000/dcu/admin/base/pytorch:1.10.0-centos7.6-dtk-22.10.1-py37-latest。（如果使用超算集群环境，建议使用 Python 虚拟环境）
+推荐使用 docker 方式运行，提供[光源](https://www.sourcefind.cn/#/service-details) torch 的 docker 镜像：image.sourcefind.cn:5000/dcu/admin/base/pytorch:1.10.0-centos7.6-dtk-22.10.1-py37-latest。（如果使用集群环境，建议使用 Python 虚拟环境）
 
 进入 docker:
 
@@ -45,7 +45,7 @@ source replace_origin.sh
 
 该微调脚本运行环境为1节点，8张 DCU-Z100L-32G。
 
-如果在超算集群上测试，可以参考 training/mpirun_slurm 中相关脚本，需要建个 Python 虚拟环境 venv_torch3.7，将 step1 下的脚本放置到 training/step1_supervised_finetuning 下，执行 run.sh 即可。
+如果在集群上测试，可以参考 training/mpirun_slurm 中相关脚本，需要建个 Python 虚拟环境 venv_torch3.7，将 step1 下的脚本放置到 training/step1_supervised_finetuning 下，执行 run.sh 即可。
 
 以下只演示如何在本地节点启动。
 
@@ -61,7 +61,7 @@ bash training_scripts/single_node/run_chatglm-6b.sh
 
 ### 收敛性
 
-在超算集群上采用**自定义数据集**训练**10 epoch loss 可以从4左右降至0.01左右，ppl 从72降至1.01**，推理输出正常，学的比较过拟合。
+在集群上采用**自定义数据集**训练**10 epoch loss 可以从4左右降至0.01左右，ppl 从72降至1.01**，推理输出正常，学的比较过拟合。
 
 ## step2
 
@@ -69,7 +69,7 @@ bash training_scripts/single_node/run_chatglm-6b.sh
 
 该微调脚本运行环境为1节点，8张 DCU-Z100L-32G。
 
-如果在超算集群上测试，可以参考 training/mpirun_slurm 中相关脚本，需要建个 Python 虚拟环境 venv_torch3.7，将 step2 下的脚本放置到 training/step2_reward_model_finetuning 下，执行 run.sh 即可。
+如果在集群上测试，可以参考 training/mpirun_slurm 中相关脚本，需要建个 Python 虚拟环境 venv_torch3.7，将 step2 下的脚本放置到 training/step2_reward_model_finetuning 下，执行 run.sh 即可。
 
 以下只演示如何在本地节点启动。
 
@@ -85,7 +85,7 @@ bash training_scripts/single_node/run_chatglm-6b.sh
 
 ### 收敛性
 
-在超算集群上采用**自定义数据集**只训练**1 epoch，loss 从1.7左右降至0.25左右**
+在集群上采用**自定义数据集**只训练**1 epoch，loss 从1.7左右降至0.25左右**
 
 chosen last scores mean, rejected last scores mean, acc如下所示：
 
@@ -105,13 +105,13 @@ chosen_last_scores (higher is better) : 12.223048210144043, reject_last_scores (
 
 ## step3
 
-当前环境可以承载的负载有限，阶段3需要加载 step1、2 的输出模型，所以打开尽可能多的显存内存优化策略，参考 step3 的 main.py，如果在超算上运行可以适当放宽限制提高性能。
+当前环境可以承载的负载有限，阶段3需要加载 step1、2 的输出模型，所以打开尽可能多的显存内存优化策略，参考 step3 的 main.py，如果在集群上运行可以适当放宽限制提高性能。
 
 ### 训练
 
 该微调脚本运行环境为1节点，8张 DCU-Z100L-32G。
 
-如果在超算集群上测试，可以参考 training/mpirun_slurm 中相关脚本，需要建个 Python 虚拟环境 venv_torch3.7，将 step3 下的脚本放置到 training/step3_rlhf_finetuning 下，执行 run.sh 即可。
+如果在集群上测试，可以参考 training/mpirun_slurm 中相关脚本，需要建个 Python 虚拟环境 venv_torch3.7，将 step3 下的脚本放置到 training/step3_rlhf_finetuning 下，执行 run.sh 即可。
 
 以下只演示如何在本地节点启动。
 
@@ -127,7 +127,7 @@ bash training_scripts/single_node/run_chatglm-6b.sh actor_model_path critic_mode
 
 ### 收敛性
 
-在超算上使用自定义数据集，采用**96张 DCU，训练1 epoch，起始 lr 都设置成1e-6**。PPO step 的 actor loss，critic loss，reward_score 如下图所示，完整 log 在 training/step3_rlhf_finetuning/training_log_output 里：
+在集群上使用**自定义数据集**，采用**96张 DCU，训练1 epoch，起始 lr 都设置成1e-6**。PPO step 的 actor loss，critic loss，reward_score 如下图所示，完整 log 在 training/step3_rlhf_finetuning/training_log_output ：
 
 ![](https://github.com/yuguo-Jack/ChatGLM-6B-in-DeepSpeed-Chat/blob/main/training/step3_rlhf_finetuning/act_loss.jpg)
 

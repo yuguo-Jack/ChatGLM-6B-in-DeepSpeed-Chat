@@ -99,15 +99,17 @@ class DeepSpeedPPOTrainer():
         self.prompt_length = prompt_length
         valid_ans_len = (ans != self.tokenizer.pad_token_id).sum(dim=-1)
         out_seq = []
+        ans_i = []
         for i in range(batch_size):
-            if valid_ans_len[
-                    i] <= 1:  # if the answer is shorter than 1 token, drop it
+            if valid_ans_len[i] <= 1:  # if the answer is shorter than 1 token, drop it
                 continue
             else:
                 if self.tokenizer.pad_token_id in ans[i]:  # remove pad
-                    ans[i] = list(filter((self.tokenizer.pad_token_id).__ne__, ans[i]))
-                seq[i][prompt_length:prompt_length+len(ans[i])] = ans[i]
-                seq[i][prompt_length+len(ans[i]):] = self.tokenizer.pad_token_id
+                    ans_i = torch.as_tensor(list(filter((self.tokenizer.pad_token_id).__ne__, ans[i].tolist())), dtype=seq.dtype, device=seq.device)
+                else:
+                    ans_i = ans[i]
+                seq[i][prompt_length:prompt_length+len(ans_i)] = ans_i
+                seq[i][prompt_length+len(ans_i):] = self.tokenizer.pad_token_id
                 out_seq.append(seq[i:i + 1])
         out_seq = torch.cat(out_seq, dim=0)  # concate output in the batch dim
 
